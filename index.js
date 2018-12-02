@@ -42,7 +42,7 @@ class ClipyMate {
   }
 
   async readSchemas(keys) {
-    if (!this.realm) {
+    if (!this.realm || this.realm.isClosed) {
       await this.init();
     }
 
@@ -59,6 +59,10 @@ class ClipyMate {
     });
 
     return schemas;
+  }
+
+  disconnect() {
+    this.realm.close();
   }
 }
 

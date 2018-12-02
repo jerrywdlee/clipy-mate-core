@@ -1,13 +1,14 @@
 import { ClipyMate } from '../index'
 
 describe('Test ClipyMate', () => {
-  let clipy = null
+  let clipy: ClipyMate = null
+  const boards = ['CPYClip', 'CPYFolder', 'CPYSnippet']
 
   beforeAll(() => {})
   beforeEach(() => {})
   afterEach(() => {})
   afterAll(() => {
-    clipy.realm.close();
+    clipy.disconnect()
   })
 
   test('Should create Realm instance', async () => {
@@ -18,4 +19,17 @@ describe('Test ClipyMate', () => {
     expect(clipy.realm).not.toBeUndefined()
   })
 
+  test('Should show schemas', async () => {
+    const schemas = await clipy.readSchemas()
+    expect(schemas.schemaVersion).toBeGreaterThan(0)
+    boards.forEach(key => {
+      expect(schemas[key]).toBeTruthy()
+    })
+    // console.log(schemas);
+  })
+
+  test('Should close realm', async () => {
+    clipy.disconnect()
+    expect(clipy.realm.isClosed).toBeTruthy()
+  })
 })

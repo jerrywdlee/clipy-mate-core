@@ -7,6 +7,7 @@ export declare class ClipyMate {
   constructor(opt?: ClipyMateOpt)
 
   init(): Promise<void>
+  disconnect(): void
   readSchemas(keys?: WatchBoard[]): Promise<{
     schemaVersion: number,
     CPYClip?: {},
