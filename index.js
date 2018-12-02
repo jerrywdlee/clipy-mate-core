@@ -90,7 +90,8 @@ function formSchema(schema) {
   return schemaObj;
 }
 
-module.exports = ClipyMate;
+// module.exports = ClipyMate;
+exports.ClipyMate = ClipyMate;
 
 if (!module.parent) {
   const clipy = new ClipyMate();
