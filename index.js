@@ -61,6 +61,34 @@ class ClipyMate {
     return schemas;
   }
 
+
+  async readSnippets() {
+    if (!this.realm || this.realm.isClosed) {
+      await this.init();
+    }
+    const realm = this.realm;
+    const folders = realm.objects('CPYFolder');
+    const result = [];
+    for (let i = 0; i < folders.length; i++) {
+      const f = folders[i];
+      const folder = {
+        index: f.index, enable: f.enable, title: f.title,
+        identifier: f.identifier, snippets: [],
+      };
+      for (let j = 0; j < folders[i].snippets.length; j++) {
+        // console.log(folders[i].snippets[j]);
+        const s = folders[i].snippets[j];
+        const snippet = {
+          index: s.index, enable: s.enable, title: s.title,
+          content: s.content, identifier: s.identifier,
+        };
+        folder.snippets.push(snippet);
+      }
+      result.push(folder);
+    }
+    return result;
+  }
+
   disconnect() {
     this.realm.close();
   }
