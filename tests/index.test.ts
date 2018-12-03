@@ -30,7 +30,7 @@ describe('Test ClipyMate', () => {
 
   test('Should show snippets', async () => {
     const snippets = await clipy.readSnippets()
-    console.log(JSON.stringify(snippets, null, '\t'))
+    // console.log(JSON.stringify(snippets, null, '\t'))
     expect(snippets).toBeTruthy()
     // console.log(snippets)
   })
