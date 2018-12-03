@@ -28,6 +28,13 @@ describe('Test ClipyMate', () => {
     // console.log(schemas);
   })
 
+  test('Should show snippets', async () => {
+    const snippets = await clipy.readSnippets()
+    console.log(JSON.stringify(snippets, null, '\t'))
+    expect(snippets).toBeTruthy()
+    // console.log(snippets)
+  })
+
   test('Should close realm', async () => {
     clipy.disconnect()
     expect(clipy.realm.isClosed).toBeTruthy()
