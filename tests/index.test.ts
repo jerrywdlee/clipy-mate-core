@@ -1,4 +1,4 @@
-import { ClipyMate } from '../index'
+import ClipyMate from '../index'
 
 describe('Test ClipyMate', () => {
   let clipy: ClipyMate = null
@@ -21,7 +21,8 @@ describe('Test ClipyMate', () => {
 
   test('Should show schemas', async () => {
     const schemas = await clipy.readSchemas()
-    expect(schemas.schemaVersion).toBeGreaterThan(0)
+    // expect(schemas.schemaVersion).toBeGreaterThan(0)
+    expect(schemas.schemaVersion).toBeGreaterThanOrEqual(7)
     boards.forEach(key => {
       expect(schemas[key]).toBeTruthy()
     })
@@ -33,6 +34,12 @@ describe('Test ClipyMate', () => {
     // console.log(JSON.stringify(snippets, null, '\t'))
     expect(snippets).toBeTruthy()
     // console.log(snippets)
+  })
+
+  test('Should output snippets xml', async () => {
+    const xml = await clipy.buildXml(true, true);
+    expect(xml).toBeTruthy()
+    // console.log(xml)
   })
 
   test('Should close realm', async () => {

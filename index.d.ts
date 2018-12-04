@@ -1,6 +1,6 @@
 import Realm from 'realm'
 
-export declare class ClipyMate {
+declare class ClipyMate {
   realm: Realm
   opt: ClipyMateOpt
 
@@ -14,10 +14,11 @@ export declare class ClipyMate {
     CPYFolder?: {},
     CPYSnippet?: {},
   }>
-  readSnippets(): Promise<folder[]>
+  readSnippets(orderByIndex?: boolean): Promise<folder[]>
+  buildXml(orderByIndex?: boolean, superMode?: boolean): Promise<string>
 }
 
-// export default ClipyMate
+export default ClipyMate
 
 type WatchBoard = 'CPYClip' | 'CPYFolder' | 'CPYSnippet'
 interface ClipyMateOpt {
@@ -25,16 +26,16 @@ interface ClipyMateOpt {
   watchBoards?: WatchBoard[],
 }
 interface folder {
-  index: number,
   title: string,
   snippets: snippet[],
-  identifier: string,
+  index?: number,
+  identifier?: string,
   enable?: boolean,
 }
 interface snippet {
-  index: number,
   title: string,
   content: string,
-  identifier: string,
+  index?: number,
+  identifier?: string,
   enable?: boolean,
 }
