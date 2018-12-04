@@ -121,8 +121,8 @@ function formSchema(schema) {
   return schemaObj;
 }
 
-// module.exports = ClipyMate;
-exports.ClipyMate = ClipyMate;
+module.exports = ClipyMate;
+module.exports.default = ClipyMate;
 
 if (!module.parent) {
   const clipy = new ClipyMate();

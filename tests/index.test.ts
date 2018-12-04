@@ -1,4 +1,4 @@
-import { ClipyMate } from '../index'
+import ClipyMate from '../index'
 
 describe('Test ClipyMate', () => {
   let clipy: ClipyMate = null
