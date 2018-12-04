@@ -36,6 +36,12 @@ describe('Test ClipyMate', () => {
     // console.log(snippets)
   })
 
+  test('Should output snippets xml', async () => {
+    const xml = await clipy.buildXml(true, true);
+    expect(xml).toBeTruthy()
+    // console.log(xml)
+  })
+
   test('Should close realm', async () => {
     clipy.disconnect()
     expect(clipy.realm.isClosed).toBeTruthy()

@@ -12,6 +12,7 @@ const Realm = require('realm');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
+const fmt = require('./lib/formatter');
 
 const access = util.promisify(fs.access);
 
@@ -61,12 +62,16 @@ class ClipyMate {
     return schemas;
   }
 
-  async readSnippets() {
+  async readSnippets(orderByIndex = true) {
     if (!this.realm || this.realm.isClosed) {
       await this.init();
     }
     const realm = this.realm;
-    const folders = realm.objects('CPYFolder');
+    let folders = realm.objects('CPYFolder');
+    if (orderByIndex) {
+      // index is ordered by Z->A
+      folders = folders.sorted('index', false);
+    }
     const result = [];
     for (let i = 0; i < folders.length; i++) {
       const f = folders[i];
@@ -74,9 +79,12 @@ class ClipyMate {
         index: f.index, enable: f.enable, title: f.title,
         identifier: f.identifier, snippets: [],
       };
-      for (let j = 0; j < folders[i].snippets.length; j++) {
-        // console.log(folders[i].snippets[j]);
-        const s = folders[i].snippets[j];
+      let snpts = f.snippets;
+      if (orderByIndex) {
+        snpts = f.snippets.sorted('index', false);
+      }
+      for (let j = 0; j < snpts.length; j++) {
+        const s = snpts[j];
         const snippet = {
           index: s.index, enable: s.enable, title: s.title,
           content: s.content, identifier: s.identifier,
@@ -86,6 +94,12 @@ class ClipyMate {
       result.push(folder);
     }
     return result;
+  }
+
+  async buildXml(orderByIndex = true, superMode = false) {
+    const folders = await this.readSnippets(orderByIndex);
+    const xml = await fmt.buildXml(folders, superMode);
+    return xml;
   }
 
   disconnect() {

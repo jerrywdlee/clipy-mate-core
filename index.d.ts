@@ -14,7 +14,8 @@ declare class ClipyMate {
     CPYFolder?: {},
     CPYSnippet?: {},
   }>
-  readSnippets(): Promise<folder[]>
+  readSnippets(orderByIndex?: boolean): Promise<folder[]>
+  buildXml(orderByIndex?: boolean, superMode?: boolean): Promise<string>
 }
 
 export default ClipyMate
