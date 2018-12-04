@@ -61,7 +61,6 @@ class ClipyMate {
     return schemas;
   }
 
-
   async readSnippets() {
     if (!this.realm || this.realm.isClosed) {
       await this.init();

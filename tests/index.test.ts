@@ -21,7 +21,8 @@ describe('Test ClipyMate', () => {
 
   test('Should show schemas', async () => {
     const schemas = await clipy.readSchemas()
-    expect(schemas.schemaVersion).toBeGreaterThan(0)
+    // expect(schemas.schemaVersion).toBeGreaterThan(0)
+    expect(schemas.schemaVersion).toBeGreaterThanOrEqual(7)
     boards.forEach(key => {
       expect(schemas[key]).toBeTruthy()
     })
