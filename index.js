@@ -69,28 +69,12 @@ class ClipyMate {
     const realm = this.realm;
     let folders = realm.objects('CPYFolder');
     if (orderByIndex) {
-      // index is ordered by Z->A
+      // index of Clipy is ordered by A->Z
       folders = folders.sorted('index', false);
     }
     const result = [];
     for (let i = 0; i < folders.length; i++) {
-      const f = folders[i];
-      const folder = {
-        index: f.index, enable: f.enable, title: f.title,
-        identifier: f.identifier, snippets: [],
-      };
-      let snpts = f.snippets;
-      if (orderByIndex) {
-        snpts = f.snippets.sorted('index', false);
-      }
-      for (let j = 0; j < snpts.length; j++) {
-        const s = snpts[j];
-        const snippet = {
-          index: s.index, enable: s.enable, title: s.title,
-          content: s.content, identifier: s.identifier,
-        };
-        folder.snippets.push(snippet);
-      }
+      const folder = formFolder(folders[i], orderByIndex);
       result.push(folder);
     }
     return result;
@@ -133,6 +117,28 @@ function formSchema(schema) {
     }
   }
   return schemaObj;
+}
+
+function formFolder(realmFolderObj, orderByIndex) {
+  const f = realmFolderObj;
+  const folder = {
+    index: f.index, enable: f.enable, title: f.title,
+    identifier: f.identifier, snippets: [],
+  };
+  let snpts = f.snippets;
+  if (orderByIndex) {
+    // index of Clipy is ordered by A->Z
+    snpts = f.snippets.sorted('index', false);
+  }
+  for (let j = 0; j < snpts.length; j++) {
+    const s = snpts[j];
+    const snippet = {
+      index: s.index, enable: s.enable, title: s.title,
+      content: s.content, identifier: s.identifier,
+    };
+    folder.snippets.push(snippet);
+  }
+  return folder;
 }
 
 module.exports = ClipyMate;
