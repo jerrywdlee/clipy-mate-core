@@ -23,11 +23,13 @@ const ClipyRealmPath = path.join(ClipyAppPath, '/default.realm');
 const defaultOpt = {
   realmPath: ClipyRealmPath,
   watchBoards: ['CPYClip', 'CPYFolder', 'CPYSnippet'],
+  events: ['insertions', 'modifications', 'deletions'],
 };
 
 class ClipyMate {
   constructor(opt) {
-    this.opt = {...defaultOpt, ...opt};
+    this.opt = { ...defaultOpt, ...opt };
+    this.models = { CPYClip: null, CPYFolder: null,CPYSnippet: null };
   }
 
   async init() {
@@ -35,6 +37,19 @@ class ClipyMate {
     try {
       await access(ClipyRealmPath, fs.constants.R_OK | fs.constants.W_OK);
       this.realm = await Realm.open({ path: ClipyRealmPath });
+      this.opt.watchBoards.forEach(name => {
+        Object.defineProperty(this, name, {
+          get: () => {
+            if (!this.models[name]) {
+              this.models[name] = this.realm.objects(name);
+            }
+            return this.models[name];
+          },
+          set: () => {
+            throw Error(`Cannot set read-only property '${name}'`);
+          }
+        });
+      })
     } catch (err) {
       console.error(`Cannot access to Clipy!\nPath: ${ClipyRealmPath}`);
       console.error(err);
@@ -46,7 +61,6 @@ class ClipyMate {
     if (!this.realm || this.realm.isClosed) {
       await this.init();
     }
-
     if (!keys) {
       keys = this.opt['watchBoards'];
     }
@@ -55,7 +69,7 @@ class ClipyMate {
     this.realm.schema.forEach(schema => {
       const name = schema['name'];
       if (keys.includes(name)) {
-        schemas[name] = formSchema(schema);
+        schemas[name] = fmt.formSchema(schema);
       }
     });
 
@@ -74,71 +88,90 @@ class ClipyMate {
     }
     const result = [];
     for (let i = 0; i < folders.length; i++) {
-      const folder = formFolder(folders[i], orderByIndex);
+      const folder = fmt.formFolder(folders[i], orderByIndex);
       result.push(folder);
     }
     return result;
   }
 
-  async buildXml(orderByIndex = true, superMode = false) {
+  async buildXml(orderByIndex = true, detailMode = false) {
     const folders = await this.readSnippets(orderByIndex);
-    const xml = await fmt.buildXml(folders, superMode);
+    const xml = await fmt.buildXml(folders, detailMode);
     return xml;
   }
 
-  disconnect() {
-    this.realm.close();
-  }
-}
-
-function formSchema(schema) {
-  const schemaObj = {};
-  for (const prop in schema['properties']) {
-    if (schema['properties'].hasOwnProperty(prop)) {
-      const type = schema['properties'][prop]['type'];
-      let initValue = null;
-      switch (type) {
-        case 'int':
-          initValue = 0;
-          break;
-        case 'bool':
-          initValue = false;
-          break;
-        case 'string':
-          initValue = '';
-          break;
-        case 'list':
-          initValue = [];
-          break;
-        default:
-          break;
+  async addListener(boardName, callbacks, rawCollection = false) {
+    if (!this.realm || this.realm.isClosed) {
+      await this.init();
+    }
+    const board = this[boardName];
+    let cb = null;
+    if (typeof callbacks === 'function') {
+      cb = async (collection, changes) => {
+        const eventNames = this.opt.events.filter(name => changes[name].length > 0);
+        if (eventNames.length === 0) { return; }
+        try {
+          const result = { changes, eventNames };
+          if (rawCollection) {
+            result['collection'] = collection;
+          } else {
+            result['targets'] = fmt.formEventResults(collection, changes, eventNames);
+          }
+          await callbacks(result);
+        } catch (e) {
+          console.error(e);
+        }
+      };
+    } else {
+      cb = async (collection, changes) => {
+        const events = Object.keys(callbacks).filter(name => this.opt.events.includes(name));
+        // await Promise.all(
+        //   events.map(name => formListener(name, collection, changes, callbacks[name], rawCollection))
+        // );
+        for (const name of events) {
+          await formListener(name, collection, changes, callbacks[name], rawCollection);
+        }
       }
-      schemaObj[prop] = initValue;
+    }
+    board.addListener(cb);
+  }
+
+  removeAllListeners(boardName) {
+    if (!this.realm || this.realm.isClosed) {
+      return;
+    }
+    if (!boardName) {
+      this.realm.removeAllListeners();
+    } else {
+      const board = this[boardName];
+      board.removeAllListeners();
     }
   }
-  return schemaObj;
+
+  disconnect() {
+    if (!this.realm || this.realm.isClosed) {
+      return;
+    }
+    this.realm.close();
+  }
+
 }
 
-function formFolder(realmFolderObj, orderByIndex) {
-  const f = realmFolderObj;
-  const folder = {
-    index: f.index, enable: f.enable, title: f.title,
-    identifier: f.identifier, snippets: [],
-  };
-  let snpts = f.snippets;
-  if (orderByIndex) {
-    // index of Clipy is ordered by A->Z
-    snpts = f.snippets.sorted('index', false);
+async function formListener(eventName, collection, changes, fn, rawCollection) {
+  if (changes[eventName].length > 0) {
+    try {
+      const eventNames = [ eventName ];
+      const result = { changes, eventNames };
+      if (rawCollection) {
+        result['collection'] = collection;
+      } else {
+        result['targets'] = fmt.formEventResults(collection, changes, eventNames);
+      }
+      await fn(result);
+    } catch (e) {
+      console.error(e);
+    }
   }
-  for (let j = 0; j < snpts.length; j++) {
-    const s = snpts[j];
-    const snippet = {
-      index: s.index, enable: s.enable, title: s.title,
-      content: s.content, identifier: s.identifier,
-    };
-    folder.snippets.push(snippet);
-  }
-  return folder;
 }
 
 module.exports = ClipyMate;
@@ -147,10 +180,24 @@ module.exports.default = ClipyMate;
 if (!module.parent) {
   const clipy = new ClipyMate();
   (async () => {
-    // await clipy.init();
     let schemas = await clipy.readSchemas();
-    console.log(schemas);
-    clipy.realm.close();
-    process.exit(0);
+    // console.log(schemas);
+    await clipy.addListener('CPYClip', async (res) => {
+      // console.log(ClipyMate.formEventResults(...res));
+      // const { collection, changes, eventNames } = res;
+      // eventNames.forEach(name => {
+      //   changes[name].forEach(i => {
+      //     console.log(name, i, collection[i]);
+      //   });
+      // });
+      console.log(res);
+      console.log(res.targets);
+      
+    });
+    setTimeout(() => {
+      clipy.removeAllListeners('CPYClip');
+    }, 10 * 1000);
+    // clipy.realm.close();
+    // process.exit(0);
   })()
 }

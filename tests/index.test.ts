@@ -42,6 +42,53 @@ describe('Test ClipyMate', () => {
     // console.log(xml)
   })
 
+  test('Should return collections', async () => {
+    const [CPYClip, CPYFolder, CPYSnippet] = boards.map(b => clipy[b])
+    expect(CPYClip).toBeTruthy()
+    expect(CPYFolder).toBeTruthy()
+    expect(CPYSnippet).toBeTruthy()
+  })
+
+  test('Should listen changes', async done => {
+    await clipy.addListener('CPYClip', res => {
+      expect(res.changes).toBeTruthy()
+      expect(res.eventNames).toBeTruthy()
+      done()
+    })
+    done() // TODO: mock needed
+  })
+
+  test('Should listen specified events', async done => {
+    await clipy.addListener('CPYSnippet', {
+      insertions: res => {
+        expect(res.eventNames[0]).toBe('insertions')
+      },
+      deletions: res => {
+        expect(res.eventNames[0]).toBe('deletions')
+      }
+    })
+    done() // TODO: mock needed
+  })
+
+  test('Shouid remove specified listeners', async done => {
+    await clipy.addListener('CPYSnippet', () => {
+      done.fail()
+    })
+    await clipy.addListener('CPYClip', () => {
+      done()
+    })
+    clipy.removeAllListeners('CPYSnippet')
+    done() // TODO: mock needed
+  })
+
+  test('Shouid remove all listeners', async done => {
+    await clipy.addListener('CPYClip', () => {
+      done.fail()
+    })
+    clipy.removeAllListeners()
+    done() // TODO: mock needed
+  })
+
   test('Should close realm', async () => {
     clipy.disconnect()
     expect(clipy.realm.isClosed).toBeTruthy()
