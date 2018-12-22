@@ -57,12 +57,12 @@ interface DefaultClipyMateOpt {
   watchBoards: WatchBoard[],
   events: RealmEventName[],
 }
-interface ClipyMateOpt {
+export interface ClipyMateOpt {
   realmPath?: string,
   watchBoards?: WatchBoard[],
   events?: RealmEventName[],
 }
-interface clip {
+export interface clip {
   title: string;
   dataPath?: string;
   dataHash?: string;
@@ -71,14 +71,14 @@ interface clip {
   thumbnailPath?: string;
   isColorCode?: boolean;
 }
-interface folder {
+export interface folder {
   title: string,
   snippets: snippet[],
   index?: number,
   identifier?: string,
   enable?: boolean,
 }
-interface snippet {
+export interface snippet {
   title: string,
   content: string,
   index?: number,
