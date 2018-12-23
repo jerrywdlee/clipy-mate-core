@@ -25,6 +25,9 @@ declare class ClipyMate {
   readSnippets(orderByIndex?: boolean): Promise<ClipyMate.folder[]>
   upsertFolder(opt: ClipyMate.upsertFolderOpt): Promise<ClipyMate.folder>
   upsertSnippet(opt: ClipyMate.upsertSnippetOpt, folderId?: string): Promise<ClipyMate.snippet>
+  destroyFolder(folderId: string, orderByIndex?: boolean): Promise<ClipyMate.folder>
+  destroySnippet(snippetId: string): Promise<ClipyMate.snippet>
+  private destroy(obj: Realm.Object): Promise<void>
   buildXml(orderByIndex?: boolean, detailMode?: boolean): Promise<string>
   addListener(
     boardName: ClipyMate.WatchBoard,

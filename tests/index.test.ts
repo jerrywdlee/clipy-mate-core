@@ -74,6 +74,26 @@ describe('Test ClipyMate', () => {
     expect(clipy.CPYSnippet.filtered(`identifier == '${snippetId}'`)[0].content).toBe(newCont)
   })
 
+  test('Should destroy folder and snippet', async () => {
+    const folderTitle = 'destry test folder'
+    let folder = await clipy.upsertFolder({ title: folderTitle })
+    const folderId = folder.identifier
+    const snippet = await clipy.upsertSnippet({ title: 'test snippet', content: 'test' }, folderId)
+    let snippet2 = await clipy.upsertSnippet({ title: 'test snippet2', content: 'test2' }, folderId)
+    const snippetId = snippet.identifier
+    const snippet2Id = snippet2.identifier
+
+    snippet2 = await clipy.destroySnippet(snippet2Id)
+    expect(snippet2.identifier).toBe(snippet2Id)
+    // console.log(snippet2)
+
+    folder = await clipy.destroyFolder(folderId)
+    expect(folder.identifier).toBe(folderId)
+    expect(folder.title).toBe(folderTitle)
+    expect(folder.snippets.length).toBe(1)
+    expect(folder.snippets[0].identifier).toBe(snippetId)
+  })
+
   test('Should listen changes', async done => {
     await clipy.addListener('CPYClip', res => {
       expect(res.changes).toBeTruthy()

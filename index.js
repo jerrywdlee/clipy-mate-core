@@ -153,10 +153,10 @@ class ClipyMate {
   }
 
   async upsertFolder(opt) {
-    if (!this.realm || this.realm.isClosed) {
+    const realm = this.realm;
+    if (!realm || realm.isClosed) {
       await this.init();
     }
-    const realm = this.realm;
     let folder = null;
 
     const folderOpt = {
@@ -174,10 +174,10 @@ class ClipyMate {
   }
 
   async upsertSnippet(opt, folderId) {
-    if (!this.realm || this.realm.isClosed) {
+    const realm = this.realm;
+    if (!realm || realm.isClosed) {
       await this.init();
     }
-    const realm = this.realm;
 
     if (opt['identifier']) {
       const snippet = this.CPYSnippet
@@ -204,10 +204,46 @@ class ClipyMate {
     }
     let snippetIndex = -1;
     realm.write(() => {
-      snippetIndex = folder.snippets.push(snippetOpt)
+      snippetIndex = folder.snippets.push(snippetOpt);
     })
     // console.log(snippetOpt);
     return folder.snippets[snippetIndex - 1];
+  }
+
+  async destroyFolder(folderId, orderByIndex = true) {
+    if (!this.realm || this.realm.isClosed) {
+      await this.init();
+    }
+    const folder = this.CPYFolder
+      .filtered(`identifier == '${folderId.toUpperCase()}'`)[0];
+    if (!folder) {
+      throw Error(`Cannot destroy folder\nidentifier: ${folderId}`);
+    }
+    const folderObj = fmt.formFolder(folder, orderByIndex);
+    await this.destroy(folder.snippets);
+    await this.destroy(folder);
+    return folderObj;
+  }
+
+  async destroySnippet(snippetId) {
+    if (!this.realm || this.realm.isClosed) {
+      await this.init();
+    }
+    const snippet = this.CPYSnippet
+      .filtered(`identifier == '${snippetId.toUpperCase()}'`)[0];
+    if (!snippet) {
+      throw Error(`No such snippet!\nidentifier: ${snippetId}`);
+    }
+    const snippetObj = fmt.formLeafObject(snippet);
+    await this.destroy(snippet);
+    return snippetObj;
+  }
+
+  async destroy(obj) {
+    const realm = this.realm;
+    realm.write(() => {
+      realm.delete(obj);
+    });
   }
 
   disconnect() {
