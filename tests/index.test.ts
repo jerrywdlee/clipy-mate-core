@@ -1,10 +1,35 @@
 import ClipyMate from '../index'
+import * as path from 'path'
+import * as uuid from 'uuid/v4'
+import Realm from 'realm'
 
 describe('Test ClipyMate', () => {
   let clipy: ClipyMate = null
+  const testOpt: ClipyMate.ClipyMateOpt = { realmPath: path.join(__dirname, '/default.realm') }
   const boards = ['CPYClip', 'CPYFolder', 'CPYSnippet']
 
-  beforeAll(() => {})
+  beforeAll(async () => {
+    const sampleSnippet: ClipyMate.snippet = {
+      title: 'sampleSnippet',
+      content: 'Sample Snippet',
+      index: 0,
+      identifier: uuid().toUpperCase(),
+      enable: true,
+    }
+    const sampleFolder: ClipyMate.folder = {
+      title: "sampleFolder",
+      snippets: [sampleSnippet],
+      index: 0,
+      identifier: uuid().toUpperCase(),
+      enable: true,
+    }
+    clipy = new ClipyMate()
+    // const initClipyMate = new ClipyMate(testOpt)
+    // initClipyMate.realm = await Realm.open({});
+    // // await initClipyMate.init()
+    // console.log(initClipyMate.realm.schemaVersion)
+    // initClipyMate.disconnect()
+  })
   beforeEach(() => {})
   afterEach(() => {})
   afterAll(() => {
@@ -12,7 +37,7 @@ describe('Test ClipyMate', () => {
   })
 
   test('Should create Realm instance', async () => {
-    clipy = new ClipyMate()
+    // clipy = new ClipyMate()
     await clipy.init()
     // console.log(clipy.opt)
     // console.log(clipy.realm)
