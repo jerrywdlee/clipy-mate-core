@@ -74,11 +74,6 @@ describe('Test ClipyMate', () => {
     expect(clipy.CPYSnippet.filtered(`identifier == '${snippetId}'`)[0].content).toBe(newCont)
   })
 
-  test('Should close realm', async () => {
-    clipy.disconnect()
-    expect(clipy.realm.isClosed).toBeTruthy()
-  })
-
   describe('Test destroying objects', () => {
     const folderTitle = 'destry test folder'
     let folder: ClipyMate.folder, snippet: ClipyMate.snippet, snippet2: ClipyMate.snippet
@@ -109,12 +104,22 @@ describe('Test ClipyMate', () => {
   })
 
   describe('Test listeners', () => {
+    const folderTtl = 'test folder', snippetTtl = 'test snippet'
+    let folder: ClipyMate.folder, snippet: ClipyMate.snippet
+    beforeAll(async () => {
+      folder = await clipy.upsertFolder({ title: folderTtl })
+      const folderId = folder.identifier
+      snippet = await clipy.upsertSnippet({ title: snippetTtl, content: 'test' }, folderId)
+    })
+
     test('Should listen changes', async done => {
       await clipy.addListener('CPYSnippet', res => {
         expect(res.changes).toBeTruthy()
         expect(res.eventNames).toBeTruthy()
         done()
       })
+      const snippetId = snippet.identifier
+      await clipy.upsertSnippet({ content: 'test2', identifier: snippetId})
       done() // TODO: mock needed
     })
 
@@ -150,4 +155,8 @@ describe('Test ClipyMate', () => {
     })
   })
 
+  test('Should close realm', async () => {
+    clipy.disconnect()
+    expect(clipy.realm.isClosed).toBeTruthy()
+  })
 })
