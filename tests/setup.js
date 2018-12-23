@@ -8,6 +8,6 @@ module.exports = async function (params) {
 
   const clipy = new ClipyMate();
   clipy.realm = await Realm.open({ schema: Object.values(schema), schemaVersion: 7 });
-  console.log(clipy.realm.schemaVersion);
+  // console.log(clipy.realm.schemaVersion);
   clipy.disconnect();
 };
