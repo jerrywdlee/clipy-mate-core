@@ -23,7 +23,8 @@ declare class ClipyMate {
     CPYSnippet?: {},
   }>
   readSnippets(orderByIndex?: boolean): Promise<ClipyMate.folder[]>
-  upsertFolder(opt: ClipyMate.folder): Promise<Realm.Object | ClipyMate.folder>
+  upsertFolder(opt: ClipyMate.upsertFolderOpt): Promise<ClipyMate.folder>
+  upsertSnippet(opt: ClipyMate.upsertSnippetOpt, folderId?: string): Promise<ClipyMate.snippet>
   buildXml(orderByIndex?: boolean, detailMode?: boolean): Promise<string>
   addListener(
     boardName: ClipyMate.WatchBoard,
@@ -73,14 +74,28 @@ declare namespace ClipyMate {
   }
   interface folder {
     title: string,
+    snippets: snippet[],
+    index: number,
+    identifier: string,
+    enable: boolean,
+  }
+  interface upsertFolderOpt {
+    title?: string,
     snippets?: snippet[],
-    index?: number,
     identifier?: string,
+    index?: number,
     enable?: boolean,
   }
   interface snippet {
     title: string,
     content: string,
+    index: number,
+    identifier: string,
+    enable: boolean,
+  }
+  interface upsertSnippetOpt {
+    title?: string,
+    content?: string,
     index?: number,
     identifier?: string,
     enable?: boolean,

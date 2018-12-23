@@ -55,6 +55,7 @@ class ClipyMate {
     } catch (err) {
       console.error(`Cannot access to Clipy!\nPath: ${ClipyRealmPath}`);
       console.error(err);
+      throw err;
       // process.exit(1);
     }
   }
@@ -158,37 +159,55 @@ class ClipyMate {
     const realm = this.realm;
     let folder = null;
 
-    if (opt['identifier']) {
-      folder = this.CPYFolder
-        .filtered(`identifier == '${opt['identifier'].toUpperCase()}'`)[0];
-      if (folder) {
-        realm.write(() => {
-          Object.keys(opt).forEach(prop => {
-            if (prop !== 'identifier' && folder[prop]) {
-              folder[prop] = opt[prop];
-            }
-          });
-        });
-        return folder;
-      }
-    } else {
-      opt['identifier'] = uuidv4().toUpperCase();
-    }
-
-    if (!opt['index']) {
-      opt['index'] = await getIndex('CPYFolder', this);
-    }
-
     const folderOpt = {
       title: 'untitled folder', snippets: [],
+      identifier: uuidv4().toUpperCase(),
       enable: true, ...opt,
     }
-
+    if (!folderOpt['index']) {
+      folderOpt['index'] = await getIndex(this.CPYFolder);
+    }
     realm.write(() => {
-      folder = realm.create('CPYFolder', folderOpt);
+      folder = realm.create('CPYFolder', folderOpt, true);
     });
-
     return folder;
+  }
+
+  async upsertSnippet(opt, folderId) {
+    if (!this.realm || this.realm.isClosed) {
+      await this.init();
+    }
+    const realm = this.realm;
+
+    if (opt['identifier']) {
+      const snippet = this.CPYSnippet
+        .filtered(`identifier == '${opt['identifier'].toUpperCase()}'`)[0];
+      if (snippet) {
+        realm.write(() => {
+          realm.create('CPYSnippet', opt, true);
+        });
+        return snippet;
+      }
+    }
+    const folder = this.CPYFolder
+      .filtered(`identifier == '${folderId.toUpperCase()}'`)[0];
+    if (!folder) {
+      throw Error(`No such folder!\nidentifier: ${folderId}`);
+    }
+    const snippetOpt = {
+      title: 'untitled snippet', content: '',
+      identifier: uuidv4().toUpperCase(),
+      enable: true, ...opt,
+    }
+    if (!snippetOpt['index']) {
+      snippetOpt['index'] = await getIndex(folder.snippets);
+    }
+    let snippetIndex = -1;
+    realm.write(() => {
+      snippetIndex = folder.snippets.push(snippetOpt)
+    })
+    // console.log(snippetOpt);
+    return folder.snippets[snippetIndex - 1];
   }
 
   disconnect() {
@@ -217,8 +236,8 @@ async function formListener(eventName, collection, changes, fn, rawCollection) {
   }
 }
 
-async function getIndex(boardName, clipyMateObj) {
-  const lastOne = clipyMateObj[boardName].sorted('index', true)[0];
+async function getIndex(boardObj) {
+  const lastOne = boardObj.sorted('index', true)[0];
   if (!lastOne) {
     return 0;
   } else {

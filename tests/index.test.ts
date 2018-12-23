@@ -1,34 +1,13 @@
 import ClipyMate from '../index'
 import * as path from 'path'
-import * as uuid from 'uuid/v4'
-import Realm from 'realm'
 
 describe('Test ClipyMate', () => {
   let clipy: ClipyMate = null
-  const testOpt: ClipyMate.ClipyMateOpt = { realmPath: path.join(__dirname, '/default.realm') }
+  const testOpt: ClipyMate.ClipyMateOpt = { realmPath: path.join(__dirname, '../default.realm') }
   const boards = ['CPYClip', 'CPYFolder', 'CPYSnippet']
 
   beforeAll(async () => {
-    const sampleSnippet: ClipyMate.snippet = {
-      title: 'sampleSnippet',
-      content: 'Sample Snippet',
-      index: 0,
-      identifier: uuid().toUpperCase(),
-      enable: true,
-    }
-    const sampleFolder: ClipyMate.folder = {
-      title: "sampleFolder",
-      snippets: [sampleSnippet],
-      index: 0,
-      identifier: uuid().toUpperCase(),
-      enable: true,
-    }
-    clipy = new ClipyMate()
-    // const initClipyMate = new ClipyMate(testOpt)
-    // initClipyMate.realm = await Realm.open({});
-    // // await initClipyMate.init()
-    // console.log(initClipyMate.realm.schemaVersion)
-    // initClipyMate.disconnect()
+    clipy = new ClipyMate(testOpt)
   })
   beforeEach(() => {})
   afterEach(() => {})
@@ -76,12 +55,23 @@ describe('Test ClipyMate', () => {
 
   test('Should create and update folder', async () => {
     let folder = await clipy.upsertFolder({ title: 'test folder' })
-    const uuid = folder['identifier']
+    const uuid = folder.identifier
     // console.log(uuid)
     expect(clipy.CPYFolder.filtered(`identifier == '${uuid}'`)[0]).toBeTruthy()
     const newTitle = 'new test folder'
     folder = await clipy.upsertFolder({ title: newTitle, identifier: uuid })
     expect(clipy.CPYFolder.filtered(`identifier == '${uuid}'`)[0].title).toBe(newTitle)
+  })
+
+  test('Should create and update snippet', async () => {
+    let folder = clipy.CPYFolder[0]
+    const folderId = folder.identifier
+    const snippet = await clipy.upsertSnippet({ title: 'test snippet', content: 'test' }, folderId)
+    const snippetId = snippet.identifier
+    expect(clipy.CPYSnippet.filtered(`identifier == '${snippetId}'`)[0]).toBeTruthy()
+    const newCont = 'new test content'
+    clipy.upsertSnippet({ content: newCont, identifier: snippetId }, folderId)
+    expect(clipy.CPYSnippet.filtered(`identifier == '${snippetId}'`)[0].content).toBe(newCont)
   })
 
   test('Should listen changes', async done => {
