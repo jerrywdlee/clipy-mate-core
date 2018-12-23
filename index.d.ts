@@ -9,9 +9,9 @@ declare class ClipyMate {
     CPYSnippet: Realm.Results<ClipyMate.snippet>,
   }
   // getters
-  public CPYClip: Realm.Results<ClipyMate.clip>
-  public CPYFolder: Realm.Results<ClipyMate.folder>
-  public CPYSnippet: Realm.Results<ClipyMate.snippet>
+  public readonly CPYClip: Realm.Results<ClipyMate.clip>
+  public readonly CPYFolder: Realm.Results<ClipyMate.folder>
+  public readonly CPYSnippet: Realm.Results<ClipyMate.snippet>
 
   constructor(opt?: ClipyMate.ClipyMateOpt)
   init(): Promise<void>
@@ -23,6 +23,7 @@ declare class ClipyMate {
     CPYSnippet?: {},
   }>
   readSnippets(orderByIndex?: boolean): Promise<ClipyMate.folder[]>
+  upsertFolder(opt: ClipyMate.folder): Promise<Realm.Object | ClipyMate.folder>
   buildXml(orderByIndex?: boolean, detailMode?: boolean): Promise<string>
   addListener(
     boardName: ClipyMate.WatchBoard,
@@ -31,8 +32,6 @@ declare class ClipyMate {
   ): Promise<void>
   removeAllListeners(boardName?: ClipyMate.WatchBoard): void
 }
-
-// export default ClipyMate
 
 declare namespace ClipyMate {
   type WatchBoard = 'CPYClip' | 'CPYFolder' | 'CPYSnippet'
@@ -74,7 +73,7 @@ declare namespace ClipyMate {
   }
   interface folder {
     title: string,
-    snippets: snippet[],
+    snippets?: snippet[],
     index?: number,
     identifier?: string,
     enable?: boolean,
@@ -89,4 +88,3 @@ declare namespace ClipyMate {
 }
 
 export = ClipyMate
-

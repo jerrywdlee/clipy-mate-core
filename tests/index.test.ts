@@ -74,6 +74,16 @@ describe('Test ClipyMate', () => {
     expect(CPYSnippet).toBeTruthy()
   })
 
+  test('Should create and update folder', async () => {
+    let folder = await clipy.upsertFolder({ title: 'test folder' })
+    const uuid = folder['identifier']
+    // console.log(uuid)
+    expect(clipy.CPYFolder.filtered(`identifier == '${uuid}'`)[0]).toBeTruthy()
+    const newTitle = 'new test folder'
+    folder = await clipy.upsertFolder({ title: newTitle, identifier: uuid })
+    expect(clipy.CPYFolder.filtered(`identifier == '${uuid}'`)[0].title).toBe(newTitle)
+  })
+
   test('Should listen changes', async done => {
     await clipy.addListener('CPYClip', res => {
       expect(res.changes).toBeTruthy()

@@ -12,6 +12,7 @@ const Realm = require('realm');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
+const uuidv4 = require('uuid/v4');
 const fmt = require('./lib/formatter');
 
 const access = util.promisify(fs.access);
@@ -32,11 +33,12 @@ class ClipyMate {
     this.models = { CPYClip: null, CPYFolder: null,CPYSnippet: null };
   }
 
-  async init() {
+  async init(opt) {
     const ClipyRealmPath = this.opt['realmPath'];
+    const RealmOpt = { path: ClipyRealmPath, ...opt }
     try {
       await access(ClipyRealmPath, fs.constants.R_OK | fs.constants.W_OK);
-      this.realm = await Realm.open({ path: ClipyRealmPath });
+      this.realm = await Realm.open(RealmOpt);
       this.opt.watchBoards.forEach(name => {
         Object.defineProperty(this, name, {
           get: () => {
@@ -69,6 +71,7 @@ class ClipyMate {
     this.realm.schema.forEach(schema => {
       const name = schema['name'];
       if (keys.includes(name)) {
+        // console.log(name, schema);
         schemas[name] = fmt.formSchema(schema);
       }
     });
@@ -148,6 +151,46 @@ class ClipyMate {
     }
   }
 
+  async upsertFolder(opt) {
+    if (!this.realm || this.realm.isClosed) {
+      await this.init();
+    }
+    const realm = this.realm;
+    let folder = null;
+
+    if (opt['identifier']) {
+      folder = this.CPYFolder
+        .filtered(`identifier == '${opt['identifier'].toUpperCase()}'`)[0];
+      if (folder) {
+        realm.write(() => {
+          Object.keys(opt).forEach(prop => {
+            if (prop !== 'identifier' && folder[prop]) {
+              folder[prop] = opt[prop];
+            }
+          });
+        });
+        return folder;
+      }
+    } else {
+      opt['identifier'] = uuidv4().toUpperCase();
+    }
+
+    if (!opt['index']) {
+      opt['index'] = await getIndex('CPYFolder', this);
+    }
+
+    const folderOpt = {
+      title: 'untitled folder', snippets: [],
+      enable: true, ...opt,
+    }
+
+    realm.write(() => {
+      folder = realm.create('CPYFolder', folderOpt);
+    });
+
+    return folder;
+  }
+
   disconnect() {
     if (!this.realm || this.realm.isClosed) {
       return;
@@ -171,6 +214,15 @@ async function formListener(eventName, collection, changes, fn, rawCollection) {
     } catch (e) {
       console.error(e);
     }
+  }
+}
+
+async function getIndex(boardName, clipyMateObj) {
+  const lastOne = clipyMateObj[boardName].sorted('index', true)[0];
+  if (!lastOne) {
+    return 0;
+  } else {
+    return lastOne['index'] + 1;
   }
 }
 
