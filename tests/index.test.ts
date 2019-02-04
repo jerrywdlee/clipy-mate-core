@@ -116,6 +116,13 @@ describe('Test ClipyMate', () => {
       expect(folder.snippets.length).toBe(1)
       expect(folder.snippets[0].identifier).toBe(snippetId)
     })
+
+    test('Should destroy folder and snippet', async () => {
+      await clipy.clearAllSnippets()
+
+      const snippets = await clipy.readSnippets()
+      expect(snippets.length).toBe(0)
+    })
   })
 
   describe('Test listeners', () => {

@@ -250,6 +250,17 @@ class ClipyMate {
     });
   }
 
+  async clearAllSnippets() {
+    if (!this.realm || this.realm.isClosed) {
+      await this.init();
+    }
+    const realm = this.realm;
+    const folders = realm.objects('CPYFolder');
+    const snippets = realm.objects('CPYSnippet');
+    await this.destroy(folders);
+    await this.destroy(snippets);
+  }
+
   disconnect() {
     if (!this.realm || this.realm.isClosed) {
       return;

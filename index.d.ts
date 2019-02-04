@@ -27,6 +27,7 @@ declare class ClipyMate {
   upsertSnippet(opt: ClipyMate.upsertSnippetOpt, folderId?: string): Promise<ClipyMate.snippet>
   destroyFolder(folderId: string, orderByIndex?: boolean): Promise<ClipyMate.folder>
   destroySnippet(snippetId: string): Promise<ClipyMate.snippet>
+  clearAllSnippets(): Promise<void>
   private destroy(obj: Realm.Object): Promise<void>
   buildXml(orderByIndex?: boolean, detailMode?: boolean): Promise<string>
   parseXml(xmlString: string): Promise<ClipyMate.folder[]>
