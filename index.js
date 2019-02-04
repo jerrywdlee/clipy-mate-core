@@ -12,6 +12,7 @@ const Realm = require('realm');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
+const uuidv4 = require('uuid/v4');
 const fmt = require('./lib/formatter');
 
 const access = util.promisify(fs.access);
@@ -32,11 +33,12 @@ class ClipyMate {
     this.models = { CPYClip: null, CPYFolder: null,CPYSnippet: null };
   }
 
-  async init() {
+  async init(opt) {
     const ClipyRealmPath = this.opt['realmPath'];
+    const RealmOpt = { path: ClipyRealmPath, ...opt }
     try {
       await access(ClipyRealmPath, fs.constants.R_OK | fs.constants.W_OK);
-      this.realm = await Realm.open({ path: ClipyRealmPath });
+      this.realm = await Realm.open(RealmOpt);
       this.opt.watchBoards.forEach(name => {
         Object.defineProperty(this, name, {
           get: () => {
@@ -53,6 +55,7 @@ class ClipyMate {
     } catch (err) {
       console.error(`Cannot access to Clipy!\nPath: ${ClipyRealmPath}`);
       console.error(err);
+      throw err;
       // process.exit(1);
     }
   }
@@ -69,6 +72,7 @@ class ClipyMate {
     this.realm.schema.forEach(schema => {
       const name = schema['name'];
       if (keys.includes(name)) {
+        // console.log(name, schema);
         schemas[name] = fmt.formSchema(schema);
       }
     });
@@ -98,6 +102,10 @@ class ClipyMate {
     const folders = await this.readSnippets(orderByIndex);
     const xml = await fmt.buildXml(folders, detailMode);
     return xml;
+  }
+
+  async parseXml(xmlString) {
+    return await fmt.parseXml(xmlString);
   }
 
   async addListener(boardName, callbacks, rawCollection = false) {
@@ -148,6 +156,118 @@ class ClipyMate {
     }
   }
 
+  async upsertFolder(opt) {
+    const realm = this.realm;
+    if (!realm || realm.isClosed) {
+      await this.init();
+    }
+    let folder = null;
+    let snippets = opt['snippets'];
+
+    const folderOpt = {
+      title: 'untitled folder',
+      identifier: uuidv4().toUpperCase(),
+      enable: true, ...opt, snippets: [],
+    }
+    if (!folderOpt['index']) {
+      folderOpt['index'] = await getIndex(this.CPYFolder);
+    }
+    realm.write(() => {
+      folder = realm.create('CPYFolder', folderOpt, true);
+    });
+    if (snippets && snippets.length > 0) {
+      const folderId = folderOpt.identifier;
+      for (const snpOpt of snippets) {
+        await this.upsertSnippet(snpOpt, folderId);
+      }
+    }
+    return folder;
+  }
+
+  async upsertSnippet(opt, folderId) {
+    const realm = this.realm;
+    if (!realm || realm.isClosed) {
+      await this.init();
+    }
+
+    if (opt['identifier']) {
+      const snippet = this.CPYSnippet
+        .filtered(`identifier == '${opt['identifier'].toUpperCase()}'`)[0];
+      if (snippet) {
+        realm.write(() => {
+          realm.create('CPYSnippet', opt, true);
+        });
+        return snippet;
+      }
+    }
+    const folder = this.CPYFolder
+      .filtered(`identifier == '${folderId.toUpperCase()}'`)[0];
+    if (!folder) {
+      throw Error(`No such folder!\nidentifier: ${folderId}`);
+    }
+    const snippetOpt = {
+      title: 'untitled snippet', content: '',
+      identifier: uuidv4().toUpperCase(),
+      enable: true, ...opt,
+    }
+    if (!snippetOpt['index']) {
+      snippetOpt['index'] = await getIndex(folder.snippets);
+    }
+    let snippetIndex = -1;
+    realm.write(() => {
+      snippetIndex = folder.snippets.push(snippetOpt);
+    })
+    // console.log(snippetOpt);
+    return folder.snippets[snippetIndex - 1];
+  }
+
+  async destroyFolder(folderId, orderByIndex = true) {
+    if (!this.realm || this.realm.isClosed) {
+      await this.init();
+    }
+    const folder = this.CPYFolder
+      .filtered(`identifier == '${folderId.toUpperCase()}'`)[0];
+    if (!folder) {
+      throw Error(`Cannot destroy folder\nidentifier: ${folderId}`);
+    }
+    const folderObj = fmt.formFolder(folder, orderByIndex);
+    await this.destroy(folder.snippets);
+    await this.destroy(folder);
+    return folderObj;
+  }
+
+  async destroySnippet(snippetId) {
+    if (!this.realm || this.realm.isClosed) {
+      await this.init();
+    }
+    const snippet = this.CPYSnippet
+      .filtered(`identifier == '${snippetId.toUpperCase()}'`)[0];
+    if (!snippet) {
+      throw Error(`No such snippet!\nidentifier: ${snippetId}`);
+    }
+    const snippetObj = fmt.formLeafObject(snippet);
+    await this.destroy(snippet);
+    return snippetObj;
+  }
+
+  async destroy(obj) {
+    const realm = this.realm;
+    realm.write(() => {
+      realm.delete(obj);
+    });
+  }
+
+  async clearAllSnippets() {
+    if (!this.realm || this.realm.isClosed) {
+      await this.init();
+    }
+    const realm = this.realm;
+    const folders = realm.objects('CPYFolder');
+    const snippets = realm.objects('CPYSnippet');
+    await this.destroy(folders);
+    await this.destroy(snippets);
+  }
+
   disconnect() {
     if (!this.realm || this.realm.isClosed) {
       return;
@@ -171,6 +291,15 @@ async function formListener(eventName, collection, changes, fn, rawCollection) {
     } catch (e) {
       console.error(e);
     }
+  }
+}
+
+async function getIndex(boardObj) {
+  const lastOne = boardObj.sorted('index', true)[0];
+  if (!lastOne) {
+    return 0;
+  } else {
+    return lastOne['index'] + 1;
   }
 }
 

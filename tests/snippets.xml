@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<folders>
+	<folder>
+		<title>Foo</title>
+		<snippets>
+			<snippet>
+				<title>Foo 01</title>
+				<content>snippet foo_01 </content>
+			</snippet>
+			<snippet>
+				<title>Foo 02</title>
+				<content> snippet foo_02</content>
+			</snippet>
+			<snippet>
+				<title>Foo 03</title>
+				<content>  snippet foo_03</content>
+			</snippet>
+		</snippets>
+	</folder>
+	<folder>
+		<title>Bar</title>
+		<snippets>
+			<snippet>
+				<title>Bar 01</title>
+				<content>snippet bar_01</content>
+			</snippet>
+			<snippet>
+				<title>JSON.stringify</title>
+				<content>JSON.stringify({ uno: 1, dos: 2 }, null, &apos;\t&apos;);</content>
+			</snippet>
+			<snippet>
+				<title>いろは</title>
+				<content>いろはにほへ</content>
+			</snippet>
+			<snippet>
+				<title>天地玄黄</title>
+				<content>天地玄黄，宇宙洪荒</content>
+			</snippet>
+		</snippets>
+	</folder>
+</folders>
