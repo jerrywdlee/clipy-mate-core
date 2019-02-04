@@ -56,53 +56,37 @@ declare namespace ClipyMate {
     insertions?: Realm.Object,
     modifications?: Realm.Object,
   }
-  interface DefaultClipyMateOpt {
+  type DefaultClipyMateOpt = {
     realmPath: string,
     watchBoards: WatchBoard[],
     events: RealmEventName[],
   }
-  interface ClipyMateOpt {
-    realmPath?: string,
-    watchBoards?: WatchBoard[],
-    events?: RealmEventName[],
-  }
+  type ClipyMateOpt = { [T in keyof DefaultClipyMateOpt]+?: DefaultClipyMateOpt[T] }
   interface clip {
-    title: string;
-    dataPath?: string;
-    dataHash?: string;
-    primaryType?: string; // Only NSStringPboardType?
-    updateTime?: number;
-    thumbnailPath?: string;
-    isColorCode?: boolean;
+    title: string,
+    dataPath?: string,
+    dataHash?: string,
+    primaryType?: string, // Only NSStringPboardType?
+    updateTime?: number,
+    thumbnailPath?: string,
+    isColorCode?: boolean,
   }
-  interface folder {
+  type folder = {
     title: string,
     snippets: snippet[],
     index: number,
     identifier: string,
     enable: boolean,
   }
-  interface upsertFolderOpt {
-    title?: string,
-    snippets?: snippet[],
-    identifier?: string,
-    index?: number,
-    enable?: boolean,
-  }
-  interface snippet {
+  type upsertFolderOpt = { [T in keyof folder]+?: folder[T] }
+  type snippet = {
     title: string,
     content: string,
     index: number,
     identifier: string,
     enable: boolean,
   }
-  interface upsertSnippetOpt {
-    title?: string,
-    content?: string,
-    index?: number,
-    identifier?: string,
-    enable?: boolean,
-  }
+  type upsertSnippetOpt = { [T in keyof snippet]+?: snippet[T] }
 }
 
 export = ClipyMate
