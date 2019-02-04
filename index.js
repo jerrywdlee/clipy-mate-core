@@ -104,6 +104,10 @@ class ClipyMate {
     return xml;
   }
 
+  async parseXml(xmlString) {
+    return await fmt.parseXml(xmlString);
+  }
+
   async addListener(boardName, callbacks, rawCollection = false) {
     if (!this.realm || this.realm.isClosed) {
       await this.init();

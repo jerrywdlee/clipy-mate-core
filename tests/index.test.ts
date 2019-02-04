@@ -1,5 +1,9 @@
 import ClipyMate from '../index'
 import * as path from 'path'
+import * as fs from 'fs'
+import * as util from 'util'
+
+const readFile = util.promisify(fs.readFile)
 
 describe('Test ClipyMate', () => {
   let clipy: ClipyMate = null
@@ -46,6 +50,17 @@ describe('Test ClipyMate', () => {
     // console.log(xml)
   })
 
+  test('Should load snippet.xml', async () => {
+    const xmlPath = path.join(__dirname, 'snippets.xml')
+    const xmlString = await readFile(xmlPath, 'utf8');
+    const folders = await clipy.parseXml(xmlString)
+
+    expect(folders.length).toBe(2)
+    expect(folders[0].title).toBe('Foo')
+    expect(folders[0].snippets.length).toBe(3)
+    expect(folders[0].snippets[0].title).toBe('Foo 01')
+  })
+
   test('Should return collections', async () => {
     const [CPYClip, CPYFolder, CPYSnippet] = boards.map(b => clipy[b])
     expect(CPYClip).toBeTruthy()
@@ -84,7 +99,7 @@ describe('Test ClipyMate', () => {
       snippet2 = await clipy.upsertSnippet({ title: 'test snippet2', content: 'test2' }, folderId)
     })
 
-    test('Shouid destroy snippet', async () => {
+    test('Should destroy snippet', async () => {
       const snippet2Id = snippet2.identifier
       snippet2 = await clipy.destroySnippet(snippet2Id)
       expect(snippet2.identifier).toBe(snippet2Id)
@@ -135,7 +150,7 @@ describe('Test ClipyMate', () => {
       done() // TODO: mock needed
     })
 
-    test('Shouid remove specified listeners', async done => {
+    test('Should remove specified listeners', async done => {
       await clipy.addListener('CPYSnippet', () => {
         done.fail()
       })
@@ -146,7 +161,7 @@ describe('Test ClipyMate', () => {
       done() // TODO: mock needed
     })
 
-    test('Shouid remove all listeners', async done => {
+    test('Should remove all listeners', async done => {
       await clipy.addListener('CPYClip', () => {
         done.fail()
       })

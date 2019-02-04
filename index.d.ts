@@ -29,6 +29,7 @@ declare class ClipyMate {
   destroySnippet(snippetId: string): Promise<ClipyMate.snippet>
   private destroy(obj: Realm.Object): Promise<void>
   buildXml(orderByIndex?: boolean, detailMode?: boolean): Promise<string>
+  parseXml(xmlString: string): Promise<ClipyMate.folder[]>
   addListener(
     boardName: ClipyMate.WatchBoard,
     callbacks: ClipyMate.RealmListener | ClipyMate.RealmListenerSet,
@@ -61,7 +62,7 @@ declare namespace ClipyMate {
     watchBoards: WatchBoard[],
     events: RealmEventName[],
   }
-  type ClipyMateOpt = { [T in keyof DefaultClipyMateOpt]+?: DefaultClipyMateOpt[T] }
+  type ClipyMateOpt = Partial<DefaultClipyMateOpt>
   interface clip {
     title: string,
     dataPath?: string,
@@ -78,7 +79,7 @@ declare namespace ClipyMate {
     identifier: string,
     enable: boolean,
   }
-  type upsertFolderOpt = { [T in keyof folder]+?: folder[T] }
+  type upsertFolderOpt = Partial<folder>
   type snippet = {
     title: string,
     content: string,
@@ -86,7 +87,7 @@ declare namespace ClipyMate {
     identifier: string,
     enable: boolean,
   }
-  type upsertSnippetOpt = { [T in keyof snippet]+?: snippet[T] }
+  type upsertSnippetOpt = Partial<snippet>
 }
 
 export = ClipyMate
