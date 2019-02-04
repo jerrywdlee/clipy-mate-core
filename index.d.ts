@@ -27,8 +27,10 @@ declare class ClipyMate {
   upsertSnippet(opt: ClipyMate.upsertSnippetOpt, folderId?: string): Promise<ClipyMate.snippet>
   destroyFolder(folderId: string, orderByIndex?: boolean): Promise<ClipyMate.folder>
   destroySnippet(snippetId: string): Promise<ClipyMate.snippet>
+  clearAllSnippets(): Promise<void>
   private destroy(obj: Realm.Object): Promise<void>
   buildXml(orderByIndex?: boolean, detailMode?: boolean): Promise<string>
+  parseXml(xmlString: string): Promise<ClipyMate.folder[]>
   addListener(
     boardName: ClipyMate.WatchBoard,
     callbacks: ClipyMate.RealmListener | ClipyMate.RealmListenerSet,
@@ -56,53 +58,37 @@ declare namespace ClipyMate {
     insertions?: Realm.Object,
     modifications?: Realm.Object,
   }
-  interface DefaultClipyMateOpt {
+  type DefaultClipyMateOpt = {
     realmPath: string,
     watchBoards: WatchBoard[],
     events: RealmEventName[],
   }
-  interface ClipyMateOpt {
-    realmPath?: string,
-    watchBoards?: WatchBoard[],
-    events?: RealmEventName[],
-  }
+  type ClipyMateOpt = Partial<DefaultClipyMateOpt>
   interface clip {
-    title: string;
-    dataPath?: string;
-    dataHash?: string;
-    primaryType?: string; // Only NSStringPboardType?
-    updateTime?: number;
-    thumbnailPath?: string;
-    isColorCode?: boolean;
+    title: string,
+    dataPath?: string,
+    dataHash?: string,
+    primaryType?: string, // Only NSStringPboardType?
+    updateTime?: number,
+    thumbnailPath?: string,
+    isColorCode?: boolean,
   }
-  interface folder {
+  type folder = {
     title: string,
     snippets: snippet[],
     index: number,
     identifier: string,
     enable: boolean,
   }
-  interface upsertFolderOpt {
-    title?: string,
-    snippets?: snippet[],
-    identifier?: string,
-    index?: number,
-    enable?: boolean,
-  }
-  interface snippet {
+  type upsertFolderOpt = Partial<folder>
+  type snippet = {
     title: string,
     content: string,
     index: number,
     identifier: string,
     enable: boolean,
   }
-  interface upsertSnippetOpt {
-    title?: string,
-    content?: string,
-    index?: number,
-    identifier?: string,
-    enable?: boolean,
-  }
+  type upsertSnippetOpt = Partial<snippet>
 }
 
 export = ClipyMate

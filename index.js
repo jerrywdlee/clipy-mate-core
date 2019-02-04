@@ -104,6 +104,10 @@ class ClipyMate {
     return xml;
   }
 
+  async parseXml(xmlString) {
+    return await fmt.parseXml(xmlString);
+  }
+
   async addListener(boardName, callbacks, rawCollection = false) {
     if (!this.realm || this.realm.isClosed) {
       await this.init();
@@ -158,11 +162,12 @@ class ClipyMate {
       await this.init();
     }
     let folder = null;
+    let snippets = opt['snippets'];
 
     const folderOpt = {
-      title: 'untitled folder', snippets: [],
+      title: 'untitled folder',
       identifier: uuidv4().toUpperCase(),
-      enable: true, ...opt,
+      enable: true, ...opt, snippets: [],
     }
     if (!folderOpt['index']) {
       folderOpt['index'] = await getIndex(this.CPYFolder);
@@ -170,6 +175,12 @@ class ClipyMate {
     realm.write(() => {
       folder = realm.create('CPYFolder', folderOpt, true);
     });
+    if (snippets && snippets.length > 0) {
+      const folderId = folderOpt.identifier;
+      for (const snpOpt of snippets) {
+        await this.upsertSnippet(snpOpt, folderId);
+      }
+    }
     return folder;
   }
 
@@ -244,6 +255,17 @@ class ClipyMate {
     realm.write(() => {
       realm.delete(obj);
     });
+  }
+
+  async clearAllSnippets() {
+    if (!this.realm || this.realm.isClosed) {
+      await this.init();
+    }
+    const realm = this.realm;
+    const folders = realm.objects('CPYFolder');
+    const snippets = realm.objects('CPYSnippet');
+    await this.destroy(folders);
+    await this.destroy(snippets);
   }
 
   disconnect() {
