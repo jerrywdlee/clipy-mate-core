@@ -9,6 +9,7 @@ describe('Test ClipyMate', () => {
   let clipy: ClipyMate = null
   const testOpt: ClipyMate.ClipyMateOpt = { realmPath: path.join(__dirname, '../default.realm') }
   const boards = ['CPYClip', 'CPYFolder', 'CPYSnippet']
+  let xmlResult: ClipyMate.upsertFolderOpt[] = []
 
   beforeAll(async () => {
     clipy = new ClipyMate(testOpt)
@@ -54,6 +55,7 @@ describe('Test ClipyMate', () => {
     const xmlPath = path.join(__dirname, 'snippets.xml')
     const xmlString = await readFile(xmlPath, 'utf8');
     const folders = await clipy.parseXml(xmlString)
+    xmlResult = folders
 
     expect(folders.length).toBe(2)
     expect(folders[0].title).toBe('Foo')
@@ -117,11 +119,20 @@ describe('Test ClipyMate', () => {
       expect(folder.snippets[0].identifier).toBe(snippetId)
     })
 
-    test('Should destroy folder and snippet', async () => {
+    test('Should destroy all snippet', async () => {
       await clipy.clearAllSnippets()
 
       const snippets = await clipy.readSnippets()
       expect(snippets.length).toBe(0)
+    })
+
+    test('Should insert snippets from XML', async () => {
+      for (const folder of xmlResult) {
+        await clipy.upsertFolder(folder);
+      }
+
+      const snippets = await clipy.readSnippets()
+      expect(snippets.length).toBe(2)
     })
   })
 
