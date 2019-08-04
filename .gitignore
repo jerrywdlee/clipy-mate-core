@@ -85,3 +85,5 @@ typings/
 # Realm
 *.realm.*
 *.realm
+snippets.xml
+snippets.json
