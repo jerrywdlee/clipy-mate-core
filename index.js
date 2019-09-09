@@ -108,6 +108,7 @@ class ClipyMate {
     return await fmt.parseXml(xmlString);
   }
 
+  // BUG: Listener will throw `Segmentation fault: 11`
   async addListener(boardName, callbacks, rawCollection = false) {
     if (!this.realm || this.realm.isClosed) {
       await this.init();
@@ -272,6 +273,7 @@ class ClipyMate {
     if (!this.realm || this.realm.isClosed) {
       return;
     }
+    this.removeAllListeners();
     this.realm.close();
   }
 
@@ -306,6 +308,7 @@ async function getIndex(boardObj) {
 module.exports = ClipyMate;
 module.exports.default = ClipyMate;
 
+/*
 if (!module.parent) {
   const clipy = new ClipyMate();
   (async () => {
@@ -330,3 +333,4 @@ if (!module.parent) {
     // process.exit(0);
   })()
 }
+*/

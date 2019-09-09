@@ -45,12 +45,6 @@ describe('Test ClipyMate', () => {
     // console.log(snippets)
   })
 
-  test('Should output snippets xml', async () => {
-    const xml = await clipy.buildXml(true, true);
-    expect(xml).toBeTruthy()
-    // console.log(xml)
-  })
-
   test('Should load snippet.xml', async () => {
     const xmlPath = path.join(__dirname, 'snippets.xml')
     const xmlString = await readFile(xmlPath, 'utf8');
@@ -89,6 +83,19 @@ describe('Test ClipyMate', () => {
     const newCont = 'new test content'
     clipy.upsertSnippet({ content: newCont, identifier: snippetId }, folderId)
     expect(clipy.CPYSnippet.filtered(`identifier == '${snippetId}'`)[0].content).toBe(newCont)
+  })
+
+  test('Should output snippets xml from object', async () => {
+    const xml = await clipy.buildXml(true, true);
+    expect(xml).toBeTruthy()
+    // console.log(xml)
+  })
+
+  test('Should output snippets json from object', async () => {
+    const snippets = await clipy.readSnippets()
+    const json = JSON.stringify(snippets, null, '\t')
+    expect(json).toBeTruthy()
+    // console.log(json)
   })
 
   describe('Test destroying objects', () => {
