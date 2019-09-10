@@ -1,6 +1,6 @@
 {
   "name": "clipy-mate-core",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Core functions for Clipy Mate",
   "repository": "https://github.com/jerrywdlee/clipy-mate-core.git",
   "main": "index.js",
