@@ -1,11 +1,8 @@
+os:
+  - osx
 language: node_js
+osx_image: xcode10.2
 node_js:
   - "8"
   # - "10"
-before_script:
-  # Install Realm Object Server
-  - curl -s https://packagecloud.io/install/repositories/realm/realm/script.rpm.sh | sudo bash
-  - yum -y install realm-object-server-developer
-  - chkconfig realm-object-server on
-  - service realm-object-server start
 after_success: 'npm run send-to-coveralls'
