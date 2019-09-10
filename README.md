@@ -1,9 +1,21 @@
-<h1 align="center"> Clipy Mate Core </h1>
-<p align="center">
-  <b>Access Clipy From Node.js</b>
-</p>
+# Clipy Mate Core
+[![npm version](https://badge.fury.io/js/clipy-mate-core.svg)](https://badge.fury.io/js/clipy-mate-core)
+[![Build Status](https://travis-ci.org/jerrywdlee/clipy-mate-core.svg?branch=master)](https://travis-ci.org/jerrywdlee/clipy-mate-core)
+[![Coverage Status](https://coveralls.io/repos/github/jerrywdlee/clipy-mate-core/badge.svg?branch=update-readme)](https://coveralls.io/github/jerrywdlee/clipy-mate-core?branch=update-readme)
+[![Known Vulnerabilities](https://snyk.io//test/github/jerrywdlee/clipy-mate-core/badge.svg?targetFile=package.json)](https://snyk.io//test/github/jerrywdlee/clipy-mate-core?targetFile=package.json)
+
+
+Access [Clipy](https://clipy-app.com/) From Node.js
+
+## Introduction
+[Clipy](https://github.com/Clipy/Clipy) is a Clipboard extension app for macOS. This package allow developers access Clipy's folders and snippets using Node.js.  
+It also provides [TypeScript API](./index.d.ts) and all tests are written by TypeScript.  
+
+**[Attention]** This package will access Clipy's [Realm](https://realm.io/) Database directly, so you may need to restart Clipy App if snippets updated.
 
 ## Table of Contents
+- [Introduction](#introduction)
+- [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Import](#import)
@@ -15,9 +27,13 @@
 - [Contributing](#contributing)
 - [License](#license)
 
-## Installation
+## Requirements
+- MacOS 10.10 and over
+- Clipy v1.1.2 and over
+- Node.js v8.9.0 and over
 
-Use the package manager [npm](https://www.npmjs.com/) to install foobar.
+## Installation
+Use the package manager [npm](https://www.npmjs.com/) to install.
 
 ```sh
 npm i clipy-mate-core
@@ -26,7 +42,6 @@ npm i clipy-mate-core
 ## Usage
 
 ### Import
-_**Attention: Node.js version 8 or over needed.**_  
 
 ```js
 const ClipyMate = require('clipy-mate-core');
