@@ -5,4 +5,7 @@ osx_image: xcode10.2
 node_js:
   - "8"
   - "10"
+branches:
+  only:
+    - master
 after_success: 'npm run send-to-coveralls'
