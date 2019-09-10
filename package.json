@@ -9,9 +9,13 @@
     "test": "jest --detectOpenHandles --forceExit",
     "coverage": "npm test -- --coverage"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "clipy",
+    "realm",
+    "typescript"
+  ],
+  "author": "Iuliana Caesaris <iuliana.augusta+github@gmail.com>",
+  "license": "BSD-3-Clause",
   "dependencies": {
     "realm": "^2.20.0",
     "uuid": "^3.3.2",
