@@ -5,7 +5,8 @@
 [![Known Vulnerabilities](https://snyk.io//test/github/jerrywdlee/clipy-mate-core/badge.svg?targetFile=package.json)](https://snyk.io//test/github/jerrywdlee/clipy-mate-core?targetFile=package.json)
 
 
-Access [Clipy](https://clipy-app.com/) From Node.js
+Access [Clipy](https://clipy-app.com/) From Node.js  
+[English](./README.md) | [日本語](https://qiita.com/jerrywdlee/items/276959193735fe2bd02e)
 
 ## Introduction
 [Clipy](https://github.com/Clipy/Clipy) is a Clipboard extension app for macOS. This package allow developers access Clipy's folders and snippets using Node.js.  
@@ -29,7 +30,7 @@ It also provides [TypeScript API](./index.d.ts) and all tests are written by Typ
 
 ## Requirements
 - MacOS 10.10 and over
-- Clipy v1.1.2 and over
+- Clipy v1.2.0 and over
 - Node.js v8.9.0 and over
 
 ## Installation
