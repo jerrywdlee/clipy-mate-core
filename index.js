@@ -12,7 +12,7 @@ const Realm = require('realm');
 const fs = require('fs');
 const path = require('path');
 const util = require('util');
-const uuidv4 = require('uuid/v4');
+const { v4: uuidv4 } = require('uuid');
 const fmt = require('./lib/formatter');
 
 const access = util.promisify(fs.access);

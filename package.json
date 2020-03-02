@@ -1,6 +1,6 @@
 {
   "name": "clipy-mate-core",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Core functions for Clipy Mate",
   "repository": "https://github.com/jerrywdlee/clipy-mate-core.git",
   "main": "index.js",
@@ -21,18 +21,18 @@
   "author": "Iuliana Caesaris <iuliana.augusta+github@gmail.com>",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "realm": "^2.20.0",
-    "uuid": "^3.3.2",
-    "xml2js": "^0.4.19",
+    "realm": "^3.6.4",
+    "uuid": "^7.0.1",
+    "xml2js": "^0.4.23",
     "xmlbuilder": "^10.1.1"
   },
   "devDependencies": {
     "@types/jest": "^23.3.10",
     "@types/node": "^10.12.11",
     "@types/uuid": "^3.4.4",
-    "coveralls": "^3.0.6",
-    "jest": "^24.7.1",
-    "ts-jest": "^23.10.5",
+    "coveralls": "^3.0.9",
+    "jest": "^25.1.0",
+    "ts-jest": "^25.2.1",
     "ts-node": "^7.0.1",
     "typescript": "^3.1.6"
   }
