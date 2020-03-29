@@ -13,6 +13,7 @@ describe('Test ClipyMate', () => {
 
   beforeAll(async () => {
     clipy = new ClipyMate(testOpt)
+    await clipy.init()
   })
   beforeEach(() => {})
   afterEach(() => {})
@@ -21,33 +22,26 @@ describe('Test ClipyMate', () => {
   })
 
   test('Should create Realm instance', async () => {
-    // clipy = new ClipyMate()
-    await clipy.init()
-    // console.log(clipy.opt)
-    // console.log(clipy.realm)
+    // await clipy.init()
     expect(clipy.realm).not.toBeUndefined()
   })
 
   test('Should show schemas', async () => {
     const schemas = await clipy.readSchemas()
-    // expect(schemas.schemaVersion).toBeGreaterThan(0)
     expect(schemas.schemaVersion).toBeGreaterThanOrEqual(7)
     boards.forEach(key => {
       expect(schemas[key]).toBeTruthy()
     })
-    // console.log(schemas);
   })
 
   test('Should show snippets', async () => {
     const snippets = await clipy.readSnippets()
-    // console.log(JSON.stringify(snippets, null, '\t'))
     expect(snippets).toBeTruthy()
-    // console.log(snippets)
   })
 
   test('Should load snippet.xml', async () => {
     const xmlPath = path.join(__dirname, 'snippets.xml')
-    const xmlString = await readFile(xmlPath, 'utf8');
+    const xmlString = await readFile(xmlPath, 'utf8')
     const folders = await clipy.parseXml(xmlString)
     xmlResult = folders
 
@@ -67,11 +61,49 @@ describe('Test ClipyMate', () => {
   test('Should create and update folder', async () => {
     let folder = await clipy.upsertFolder({ title: 'test folder' })
     const uuid = folder.identifier
-    // console.log(uuid)
-    expect(clipy.CPYFolder.filtered(`identifier == '${uuid}'`)[0]).toBeTruthy()
+    expect(await clipy.getFolder(uuid)).toBeTruthy()
+
     const newTitle = 'new test folder'
     folder = await clipy.upsertFolder({ title: newTitle, identifier: uuid })
-    expect(clipy.CPYFolder.filtered(`identifier == '${uuid}'`)[0].title).toBe(newTitle)
+    expect((await clipy.getFolder(uuid)).title).toBe(newTitle)
+  })
+
+  test('Should update folder with snippets', async () => {
+    const snippets: ClipyMate.upsertSnippetOpt[] = [
+      { title: 'test snippet 1', content: 'test 1' },
+      { title: 'test snippet 2', content: 'test 2' },
+    ]
+    let folder = await clipy.upsertFolder({ title: 'test folder', snippets })
+    expect(folder.snippets.length).toEqual(2)
+
+    const folderId = folder.identifier
+    const newSnippets: ClipyMate.upsertSnippetOpt[] = []
+    for (const key in folder.snippets) {
+      const snpt = folder.snippets[key]
+      const identifier = snpt.identifier
+      const title = `${snpt.title} Alted`
+      const content = `${snpt.content} Alted`
+      newSnippets.push({ title, content, identifier })
+    }
+
+    newSnippets.push({
+      title: 'test snippet 3 Alted',
+      content: 'test 3 Alted',
+    })
+
+    folder = await clipy.upsertFolder({
+      title: 'new test folder',
+      identifier: folderId,
+      snippets: newSnippets,
+    })
+
+    expect(folder.snippets.length).toEqual(3)
+    for (const key in folder.snippets) {
+      const snptId = folder.snippets[key].identifier
+      const res = await clipy.getSnippet(snptId)
+      expect(res).toBeTruthy()
+      expect(res.content).toMatch(/Alted/)
+    }
   })
 
   test('Should create and update snippet', async () => {
@@ -79,23 +111,25 @@ describe('Test ClipyMate', () => {
     const folderId = folder.identifier
     const snippet = await clipy.upsertSnippet({ title: 'test snippet', content: 'test' }, folderId)
     const snippetId = snippet.identifier
-    expect(clipy.CPYSnippet.filtered(`identifier == '${snippetId}'`)[0]).toBeTruthy()
+    let res = await clipy.getSnippet(snippetId)
+    expect(res).toBeTruthy()
+    expect(res.content).toEqual('test')
+
     const newCont = 'new test content'
-    clipy.upsertSnippet({ content: newCont, identifier: snippetId }, folderId)
-    expect(clipy.CPYSnippet.filtered(`identifier == '${snippetId}'`)[0].content).toBe(newCont)
+    await clipy.upsertSnippet({ content: newCont, identifier: snippetId }, folderId)
+    res = await clipy.getSnippet(snippetId)
+    expect(res.content).toEqual('new test content')
   })
 
   test('Should output snippets xml from object', async () => {
-    const xml = await clipy.buildXml(true, true);
+    const xml = await clipy.buildXml(true, true)
     expect(xml).toBeTruthy()
-    // console.log(xml)
   })
 
   test('Should output snippets json from object', async () => {
     const snippets = await clipy.readSnippets()
     const json = JSON.stringify(snippets, null, '\t')
     expect(json).toBeTruthy()
-    // console.log(json)
   })
 
   describe('Test destroying objects', () => {
@@ -112,7 +146,6 @@ describe('Test ClipyMate', () => {
       const snippet2Id = snippet2.identifier
       snippet2 = await clipy.destroySnippet(snippet2Id)
       expect(snippet2.identifier).toBe(snippet2Id)
-      // console.log(snippet2)
     })
 
     test('Should destroy folder and snippet', async () => {
@@ -135,7 +168,7 @@ describe('Test ClipyMate', () => {
 
     test('Should insert snippets from XML', async () => {
       for (const folder of xmlResult) {
-        await clipy.upsertFolder(folder);
+        await clipy.upsertFolder(folder)
       }
 
       const snippets = await clipy.readSnippets()

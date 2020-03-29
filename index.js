@@ -72,7 +72,6 @@ class ClipyMate {
     this.realm.schema.forEach(schema => {
       const name = schema['name'];
       if (keys.includes(name)) {
-        // console.log(name, schema);
         schemas[name] = fmt.formSchema(schema);
       }
     });
@@ -162,7 +161,7 @@ class ClipyMate {
     if (!realm || realm.isClosed) {
       await this.init();
     }
-    let folder = null;
+
     let snippets = opt['snippets'];
 
     const folderOpt = {
@@ -170,12 +169,20 @@ class ClipyMate {
       identifier: uuidv4().toUpperCase(),
       enable: true, ...opt, snippets: [],
     }
+
+    let folder = await this.getFolder(folderOpt.identifier)
+    // if folder exsit, do not update snippets when touch the folder
+    if (folder) {
+      delete folderOpt.snippets;
+    }
+
     if (!folderOpt['index']) {
       folderOpt['index'] = await getIndex(this.CPYFolder);
     }
     realm.write(() => {
       folder = realm.create('CPYFolder', folderOpt, true);
     });
+
     if (snippets && snippets.length > 0) {
       const folderId = folderOpt.identifier;
       for (const snpOpt of snippets) {
@@ -192,8 +199,7 @@ class ClipyMate {
     }
 
     if (opt['identifier']) {
-      const snippet = this.CPYSnippet
-        .filtered(`identifier == '${opt['identifier'].toUpperCase()}'`)[0];
+      const snippet = await this.getSnippet(opt['identifier']);
       if (snippet) {
         realm.write(() => {
           realm.create('CPYSnippet', opt, true);
@@ -201,8 +207,7 @@ class ClipyMate {
         return snippet;
       }
     }
-    const folder = this.CPYFolder
-      .filtered(`identifier == '${folderId.toUpperCase()}'`)[0];
+    const folder = await this.getFolder(folderId);
     if (!folder) {
       throw Error(`No such folder!\nidentifier: ${folderId}`);
     }
@@ -218,7 +223,7 @@ class ClipyMate {
     realm.write(() => {
       snippetIndex = folder.snippets.push(snippetOpt);
     })
-    // console.log(snippetOpt);
+
     return folder.snippets[snippetIndex - 1];
   }
 
@@ -226,8 +231,7 @@ class ClipyMate {
     if (!this.realm || this.realm.isClosed) {
       await this.init();
     }
-    const folder = this.CPYFolder
-      .filtered(`identifier == '${folderId.toUpperCase()}'`)[0];
+    const folder = await this.getFolder(folderId);
     if (!folder) {
       throw Error(`Cannot destroy folder\nidentifier: ${folderId}`);
     }
@@ -241,8 +245,7 @@ class ClipyMate {
     if (!this.realm || this.realm.isClosed) {
       await this.init();
     }
-    const snippet = this.CPYSnippet
-      .filtered(`identifier == '${snippetId.toUpperCase()}'`)[0];
+    const snippet = await this.getSnippet(snippetId);
     if (!snippet) {
       throw Error(`No such snippet!\nidentifier: ${snippetId}`);
     }
@@ -275,6 +278,18 @@ class ClipyMate {
     }
     this.removeAllListeners();
     this.realm.close();
+  }
+
+  async getFolder(folderId) {
+    return this.CPYFolder.filtered(
+      `identifier == '${folderId.toUpperCase()}'`
+    )[0];
+  }
+
+  async getSnippet(snippetId) {
+    return this.CPYSnippet.filtered(
+      `identifier == '${snippetId.toUpperCase()}'`
+    )[0];
   }
 
 }
