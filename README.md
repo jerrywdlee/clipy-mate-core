@@ -31,7 +31,7 @@ It also provides [TypeScript API](./index.d.ts) and all tests are written by Typ
 ## Requirements
 - MacOS 10.10 and over
 - Clipy v1.2.0 and over
-- Node.js v8.9.0 and over
+- Node.js v8.9.0 and < v12 ([Why?](https://github.com/realm/realm-js/issues/2418))
 
 ## Installation
 Use the package manager [npm](https://www.npmjs.com/) to install.
