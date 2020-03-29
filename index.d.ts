@@ -23,6 +23,8 @@ declare class ClipyMate {
     CPYSnippet?: {},
   }>
   readSnippets(orderByIndex?: boolean): Promise<ClipyMate.folder[]>
+  getFolder(folderId: string): Promise<ClipyMate.folder>
+  getSnippet(snippetId: string): Promise<ClipyMate.snippet>
   upsertFolder(opt: ClipyMate.upsertFolderOpt): Promise<ClipyMate.folder>
   upsertSnippet(opt: ClipyMate.upsertSnippetOpt, folderId?: string): Promise<ClipyMate.snippet>
   destroyFolder(folderId: string, orderByIndex?: boolean): Promise<ClipyMate.folder>
@@ -75,7 +77,7 @@ declare namespace ClipyMate {
   }
   type folder = {
     title: string,
-    snippets: snippet[],
+    snippets: snippet[] | upsertSnippetOpt[],
     index: number,
     identifier: string,
     enable: boolean,
