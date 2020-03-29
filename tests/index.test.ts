@@ -21,28 +21,21 @@ describe('Test ClipyMate', () => {
   })
 
   test('Should create Realm instance', async () => {
-    // clipy = new ClipyMate()
     await clipy.init()
-    // console.log(clipy.opt)
-    // console.log(clipy.realm)
     expect(clipy.realm).not.toBeUndefined()
   })
 
   test('Should show schemas', async () => {
     const schemas = await clipy.readSchemas()
-    // expect(schemas.schemaVersion).toBeGreaterThan(0)
     expect(schemas.schemaVersion).toBeGreaterThanOrEqual(7)
     boards.forEach(key => {
       expect(schemas[key]).toBeTruthy()
     })
-    // console.log(schemas);
   })
 
   test('Should show snippets', async () => {
     const snippets = await clipy.readSnippets()
-    // console.log(JSON.stringify(snippets, null, '\t'))
     expect(snippets).toBeTruthy()
-    // console.log(snippets)
   })
 
   test('Should load snippet.xml', async () => {
@@ -67,7 +60,6 @@ describe('Test ClipyMate', () => {
   test('Should create and update folder', async () => {
     let folder = await clipy.upsertFolder({ title: 'test folder' })
     const uuid = folder.identifier
-    // console.log(uuid)
     expect(clipy.CPYFolder.filtered(`identifier == '${uuid}'`)[0]).toBeTruthy()
     const newTitle = 'new test folder'
     folder = await clipy.upsertFolder({ title: newTitle, identifier: uuid })
@@ -86,16 +78,14 @@ describe('Test ClipyMate', () => {
   })
 
   test('Should output snippets xml from object', async () => {
-    const xml = await clipy.buildXml(true, true);
+    const xml = await clipy.buildXml(true, true)
     expect(xml).toBeTruthy()
-    // console.log(xml)
   })
 
   test('Should output snippets json from object', async () => {
     const snippets = await clipy.readSnippets()
     const json = JSON.stringify(snippets, null, '\t')
     expect(json).toBeTruthy()
-    // console.log(json)
   })
 
   describe('Test destroying objects', () => {
@@ -112,7 +102,6 @@ describe('Test ClipyMate', () => {
       const snippet2Id = snippet2.identifier
       snippet2 = await clipy.destroySnippet(snippet2Id)
       expect(snippet2.identifier).toBe(snippet2Id)
-      // console.log(snippet2)
     })
 
     test('Should destroy folder and snippet', async () => {
