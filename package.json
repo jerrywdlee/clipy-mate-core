@@ -21,7 +21,7 @@
   "author": "Iuliana Caesaris <iuliana.augusta+github@gmail.com>",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "realm": "^3.6.4",
+    "realm": "^3.6.5",
     "uuid": "^7.0.1",
     "xml2js": "^0.4.23",
     "xmlbuilder": "^10.1.1"
